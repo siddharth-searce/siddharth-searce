@@ -54,9 +54,7 @@ AI TOOLING
 
 <img src="https://ghchart.rshah.org/00ff41/siddharth-searce" alt="contribution graph" width="90%" />
 
-<!-- enable once the snake workflow is live:
 <img src="https://raw.githubusercontent.com/siddharth-searce/siddharth-searce/output/github-contribution-grid-snake-dark.svg" alt="contribution snake" />
--->
 
 </div>
 
