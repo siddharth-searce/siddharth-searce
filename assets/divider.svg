@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="850" height="26" viewBox="0 0 850 26" role="img" aria-label="divider">
+  <defs>
+    <linearGradient id="dg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00F0FF" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#00FF41"/>
+      <stop offset="1" stop-color="#B44CFF" stop-opacity="0"/>
+    </linearGradient>
+    <style>
+      @keyframes dash{to{stroke-dashoffset:-320;}}
+      .flow{stroke-dasharray:4 12;animation:dash 3.5s linear infinite;}
+      @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+      .pulse{animation:pulse 2s ease-in-out infinite;}
+    </style>
+  </defs>
+  <line x1="20" y1="13" x2="830" y2="13" stroke="url(#dg)" stroke-width="1.2"/>
+  <line x1="20" y1="13" x2="830" y2="13" stroke="#00F0FF" stroke-width="1.2" class="flow" opacity="0.8"/>
+  <rect x="419" y="7" width="12" height="12" fill="none" stroke="#00FF41" stroke-width="1.4" transform="rotate(45 425 13)" class="pulse"/>
+</svg>
