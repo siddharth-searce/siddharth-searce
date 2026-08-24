@@ -1,16 +1,30 @@
 #!/usr/bin/env python3
-"""Compose the 3D contribution graph and the contribution snake into one
-self-contained HUD-framed SVG (assets/telemetry-unit.svg).
+"""Compose the 3D contribution graph and the contribution snake into ONE
+component (assets/telemetry-unit.svg): the snake is re-projected onto the
+isometric floor of the 3D graph, so it crawls between the towers.
 
 Usage: compose_telemetry.py <3d.svg> <snake.svg> <out.svg>
 
-Both inputs are nested as inner <svg> elements, so each keeps its own
-coordinate system; the snake's CSS animations are scoped by its own class
-names (the 3D variant used here is static markup), so no style collisions.
+How it works: both generators share the same 53x7 week/day grid. The snake
+SVG's body is 4 rects animated by CSS translate keyframes in 16px steps;
+the 3D floor tile for (col,row) sits at ORIGIN + col*WEEK + row*DAY. A
+single linear map converts 16px snake-space into the isometric basis, and
+the snake's keyframe translations compose through it, so the crawl itself
+becomes isometric. The flat grid, progress bar, and cell-fade animations
+from the snake SVG are dropped; only the snake body (recolored to match
+the HUD palette) is injected into the 3D document.
 """
 
 import re
 import sys
+
+# 3D floor geometry (from github-profile-3d-contrib output, 1280x850 canvas)
+ORIGIN = (140.0, 154.18)     # tile (col=0,row=0) north corner
+WEEK = (20.0, 11.545)        # +1 column (week)
+DAY = (-20.0, 11.545)        # +1 row (day)
+PITCH = 16.0                 # snake grid pixel pitch
+
+SNAKE_COLOR = "#00F0FF"
 
 
 def load(path: str):
@@ -35,22 +49,35 @@ def place(svg: str, x: float, y: float, w: float, h: float) -> str:
     return svg.replace(tag, new, 1)
 
 
+def snake_overlay(snake_svg: str) -> str:
+    style = re.search(r"<style>(.*?)</style>", snake_svg, re.S).group(1)
+    style = style.replace("--cs:purple", f"--cs:{SNAKE_COLOR}")
+    segments = re.findall(r'<rect class="s s[^>]*/>', snake_svg)
+    if not segments:
+        raise SystemExit("no snake body rects found in snake svg")
+    a = WEEK[0] / PITCH
+    b = WEEK[1] / PITCH
+    c = DAY[0] / PITCH
+    d = DAY[1] / PITCH
+    iso = f"matrix({a:g},{b:g},{c:g},{d:g},{ORIGIN[0]:g},{ORIGIN[1]:g})"
+    return f'<style>{style}</style><g transform="{iso}">{"".join(segments)}</g>'
+
+
 def main() -> None:
     iso_path, snake_path, out_path = sys.argv[1], sys.argv[2], sys.argv[3]
 
     iso, iso_w, iso_h = load(iso_path)
-    snk, snk_w, snk_h = load(snake_path)
+    snk, _, _ = load(snake_path)
+
+    iso = iso.replace("</svg>", snake_overlay(snk) + "</svg>", 1)
 
     W = 900
     content_x, content_w = 25, 850
     iso_hs = content_w * iso_h / iso_w
-    snk_hs = content_w * snk_h / snk_w
 
-    title_h, div_h, foot_h = 58, 36, 46
+    title_h, foot_h = 58, 46
     y_iso = title_h + 6
-    y_div = y_iso + iso_hs + 4
-    y_snk = y_div + div_h + 4
-    y_foot = y_snk + snk_hs + 6
+    y_foot = y_iso + iso_hs + 8
     H = y_foot + foot_h + 12
 
     parts = []
@@ -104,23 +131,6 @@ def main() -> None:
 
     parts.append(place(iso, content_x, y_iso, content_w, iso_hs))
 
-    mid = y_div + div_h / 2
-    parts.append(
-        f'<line x1="30" y1="{mid:g}" x2="255" y2="{mid:g}" stroke="url(#tcNeon)" '
-        f'stroke-width="1" opacity="0.55"/>'
-    )
-    parts.append(
-        f'<line x1="645" y1="{mid:g}" x2="{W - 30}" y2="{mid:g}" stroke="url(#tcNeon)" '
-        f'stroke-width="1" opacity="0.55"/>'
-    )
-    parts.append(
-        f'<text x="{W / 2:g}" y="{mid + 4:g}" text-anchor="middle" class="tcMono tcPulse" '
-        f'font-size="11" letter-spacing="2" fill="#00F0FF">'
-        f"[ CONTRIBUTION FEED // ORGANISM ACTIVE ]</text>"
-    )
-
-    parts.append(place(snk, content_x, y_snk, content_w, snk_hs))
-
     parts.append(
         f'<line x1="30" y1="{y_foot:g}" x2="{W - 30}" y2="{y_foot:g}" '
         f'stroke="url(#tcNeon)" stroke-width="0.8" opacity="0.5"/>'
@@ -128,7 +138,7 @@ def main() -> None:
     parts.append(
         f'<text x="{W / 2:g}" y="{y_foot + 28:g}" text-anchor="middle" class="tcMono tcPulse" '
         f'font-size="12" letter-spacing="3" fill="#00FF41">'
-        f"SIGNAL: NOMINAL · REFRESH: 24H · SOURCE: GITHUB.GRID</text>"
+        f"ORGANISM ACTIVE ON GRID · SIGNAL: NOMINAL · REFRESH: 24H</text>"
     )
 
     parts.append("</svg>")
