@@ -49,9 +49,14 @@ AI TOOLING
 
 <div align="center">
 
-<img src="https://github-readme-stats.vercel.app/api?username=siddharth-searce&show_icons=true&hide_border=true&bg_color=0D1117&title_color=00FF41&text_color=C9D1D9&icon_color=00FF41&include_all_commits=true&count_private=true" alt="GitHub stats" />
+<img src="https://github-readme-stats-sigma-five.vercel.app/api?username=siddharth-searce&show_icons=true&hide_border=true&bg_color=0D1117&title_color=00FF41&text_color=C9D1D9&icon_color=00FF41&include_all_commits=true&count_private=true" alt="GitHub stats" />
+<img src="https://streak-stats.demolab.com?user=siddharth-searce&hide_border=true&background=0D1117&ring=00FF41&fire=00FF41&currStreakLabel=00FF41&currStreakNum=C9D1D9&sideNums=C9D1D9&sideLabels=00FF41&dates=555555&stroke=0D1117" alt="contribution streak" />
 
+<img src="https://ghchart.rshah.org/00ff41/siddharth-searce" alt="contribution graph" width="90%" />
+
+<!-- enable once the snake workflow is live:
 <img src="https://raw.githubusercontent.com/siddharth-searce/siddharth-searce/output/github-contribution-grid-snake-dark.svg" alt="contribution snake" />
+-->
 
 </div>
 
