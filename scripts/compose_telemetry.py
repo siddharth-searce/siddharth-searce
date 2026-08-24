@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
-"""Compose the 3D contribution graph and the contribution snake into ONE
-component (assets/telemetry-unit.svg): the snake is re-projected onto the
-isometric floor of the 3D graph, so it crawls between the towers.
+"""Post-process the 3D contribution graph into the HUD-framed telemetry
+component (assets/telemetry-unit.svg) with sky-drop towers, glow pulse,
+light sweep and digital rain.
 
-Usage: compose_telemetry.py <3d.svg> <snake.svg> <out.svg>
+Usage: compose_telemetry.py <3d.svg> <out.svg>
 
-How it works: both generators share the same 53x7 week/day grid. The snake
-SVG's body is 4 rects animated by CSS translate keyframes in 16px steps;
-the 3D floor tile for (col,row) sits at ORIGIN + col*WEEK + row*DAY. A
-single linear map converts 16px snake-space into the isometric basis, and
-the snake's keyframe translations compose through it, so the crawl itself
-becomes isometric. The flat grid, progress bar, and cell-fade animations
-from the snake SVG are dropped; only the snake body (recolored to match
-the HUD palette) is injected into the 3D document.
+The generator's built-in SMIL rise animation is stripped and replaced
+with staggered CSS animations keyed off the isometric grid basis.
 """
 
 import re
@@ -22,9 +16,6 @@ import sys
 ORIGIN = (140.0, 154.18)     # tile (col=0,row=0) north corner
 WEEK = (20.0, 11.545)        # +1 column (week)
 DAY = (-20.0, 11.545)        # +1 row (day)
-PITCH = 16.0                 # snake grid pixel pitch
-
-SNAKE_COLOR = "#00F0FF"
 
 
 def load(path: str):
@@ -121,30 +112,15 @@ SWEEP = (
 )
 
 
-def snake_overlay(snake_svg: str) -> str:
-    style = re.search(r"<style>(.*?)</style>", snake_svg, re.S).group(1)
-    style = style.replace("--cs:purple", f"--cs:{SNAKE_COLOR}")
-    segments = re.findall(r'<rect class="s s[^>]*/>', snake_svg)
-    if not segments:
-        raise SystemExit("no snake body rects found in snake svg")
-    a = WEEK[0] / PITCH
-    b = WEEK[1] / PITCH
-    c = DAY[0] / PITCH
-    d = DAY[1] / PITCH
-    iso = f"matrix({a:g},{b:g},{c:g},{d:g},{ORIGIN[0]:g},{ORIGIN[1]:g})"
-    return f'<style>{style}</style><g transform="{iso}">{"".join(segments)}</g>'
-
-
 def main() -> None:
-    iso_path, snake_path, out_path = sys.argv[1], sys.argv[2], sys.argv[3]
+    iso_path, out_path = sys.argv[1], sys.argv[2]
 
     iso, iso_w, iso_h = load(iso_path)
-    snk, _, _ = load(snake_path)
 
     iso = animate_towers(iso)
     bg_tag = re.search(r'<rect x="0" y="0" width="\d+" height="\d+" fill="#00000f">\s*</rect>|<rect x="0" y="0" width="\d+" height="\d+" fill="#00000f"/>', iso).group(0)
     iso = iso.replace(bg_tag, bg_tag + ambient_overlay(), 1)
-    iso = iso.replace("</svg>", IN_ISO_STYLE + SWEEP + snake_overlay(snk) + "</svg>", 1)
+    iso = iso.replace("</svg>", IN_ISO_STYLE + SWEEP + "</svg>", 1)
 
     W = 900
     content_x, content_w = 25, 850
@@ -213,7 +189,7 @@ def main() -> None:
     parts.append(
         f'<text x="{W / 2:g}" y="{y_foot + 28:g}" text-anchor="middle" class="tcMono tcPulse" '
         f'font-size="12" letter-spacing="3" fill="#00FF41">'
-        f"ORGANISM ACTIVE ON GRID · SIGNAL: NOMINAL · REFRESH: 24H</text>"
+        f"SKYLINE ONLINE · SIGNAL: NOMINAL · REFRESH: 24H</text>"
     )
 
     parts.append("</svg>")
