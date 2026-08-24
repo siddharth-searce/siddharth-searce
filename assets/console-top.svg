@@ -24,5 +24,4 @@
   <circle cx="52" cy="40" r="5" fill="#FF3B3B" class="blink"/>
   <text x="66" y="45" class="mono" font-size="14" letter-spacing="3" fill="url(#cg)" font-weight="bold">TELEMETRY.CONSOLE — LIVE FEED</text>
   <text x="820" y="45" text-anchor="end" class="mono pulse" font-size="12" letter-spacing="2" fill="#00FF41">SIGNAL: LIVE ⌁</text>
-  <text x="425" y="45" text-anchor="middle" class="mono" font-size="11" letter-spacing="2" fill="#00F0FF" opacity="0.7">[ INSTRUMENT 01 // ISOMETRIC CONTRIBUTION FIELD ]</text>
 </svg>
