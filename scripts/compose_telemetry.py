@@ -49,6 +49,78 @@ def place(svg: str, x: float, y: float, w: float, h: float) -> str:
     return svg.replace(tag, new, 1)
 
 
+FLOOR_FILLS = {"rgb(68, 68, 68)", "rgb(57, 57, 57)", "rgb(48, 48, 48)"}
+GROUP_RE = re.compile(r'<g transform="translate\(([0-9.\- ]+)\)">(.*?)</g>', re.S)
+
+
+def animate_towers(iso_svg: str) -> str:
+    """Replace the generator's SMIL rise animation on contribution towers
+    with a staggered sky-drop (CSS), and add a glow pulse to the tallest."""
+    heights = []
+    for _, body in GROUP_RE.findall(iso_svg):
+        fills = set(re.findall(r'fill="(rgb\([^)]*\))"', body))
+        if fills and not fills <= FLOOR_FILLS:
+            heights.append(max(float(h) for h in re.findall(r'height="([0-9.]+)"', body)))
+    glow_h = sorted(heights)[max(0, len(heights) - max(3, len(heights) // 4))] if heights else 1e9
+
+    def repl(m):
+        pos, body = m.group(1), m.group(2)
+        fills = set(re.findall(r'fill="(rgb\([^)]*\))"', body))
+        if not fills or fills <= FLOOR_FILLS:
+            return m.group(0)
+        body = re.sub(r"<animate(?:Transform)?[^>]*>.*?</animate(?:Transform)?>", "", body, flags=re.S)
+        body = re.sub(r"<animate(?:Transform)?[^>]*/>", "", body)
+        x, y = (float(v) for v in pos.split())
+        col = ((x - ORIGIN[0]) / WEEK[0] + (y - ORIGIN[1]) / WEEK[1]) / 2
+        row = ((y - ORIGIN[1]) / DAY[1] - (x - ORIGIN[0]) / WEEK[0]) / 2
+        delay = 0.2 + col * 0.03 + row * 0.06
+        tall = max(float(h) for h in re.findall(r'height="([0-9.]+)"', body)) >= glow_h
+        cls = "twr twrGlow" if tall else "twr"
+        return (
+            f'<g transform="translate({pos})">'
+            f'<g class="{cls}" style="animation-delay:{delay:.2f}s">{body}</g></g>'
+        )
+
+    return GROUP_RE.sub(repl, iso_svg)
+
+
+def ambient_overlay() -> str:
+    """Light sweep across the scene plus sparse digital rain (injected into
+    the 3D document; rain goes behind the graph, sweep above it)."""
+    rain = []
+    for i in range(16):
+        rx = (i * 271 + 97) % 1240 + 20
+        ry = (i * 113) % 220 + 30
+        dur = 3.2 + (i * 7 % 10) * 0.35
+        dly = (i * 131 % 100) / 25.0
+        rain.append(
+            f'<line class="tcRain" x1="{rx}" y1="{ry}" x2="{rx}" y2="{ry + 14}" '
+            f'style="animation-duration:{dur:.2f}s;animation-delay:{dly:.2f}s"/>'
+        )
+    return "".join(rain)
+
+
+IN_ISO_STYLE = """<style>
+.twr{animation:twrDrop .9s cubic-bezier(.3,1.35,.45,1) backwards;}
+@keyframes twrDrop{from{transform:translateY(-680px);opacity:0}18%{opacity:1}to{transform:translateY(0);opacity:1}}
+.twrGlow{animation:twrDrop .9s cubic-bezier(.3,1.35,.45,1) backwards,twrPulse 3.4s 2s ease-in-out infinite;}
+@keyframes twrPulse{0%,100%{filter:drop-shadow(0 0 2px #00FF41)}50%{filter:drop-shadow(0 0 9px #00FF41)}}
+.tcRain{stroke:#00F0FF;stroke-width:1.5;opacity:0;animation:tcFall 4s linear infinite;}
+@keyframes tcFall{0%{transform:translateY(0);opacity:0}12%{opacity:.3}80%{opacity:.2}100%{transform:translateY(430px);opacity:0}}
+.tcSweepG{animation:tcSweep 9s 2.5s linear infinite;}
+@keyframes tcSweep{from{transform:translateX(0)}to{transform:translateX(1900px)}}
+</style>"""
+
+SWEEP = (
+    '<linearGradient id="tcSweepFill" x1="0" y1="0" x2="1" y2="0">'
+    '<stop offset="0" stop-color="#00F0FF" stop-opacity="0"/>'
+    '<stop offset="0.5" stop-color="#00F0FF" stop-opacity="0.05"/>'
+    '<stop offset="1" stop-color="#00F0FF" stop-opacity="0"/></linearGradient>'
+    '<g class="tcSweepG"><rect x="-420" y="0" width="300" height="850" '
+    'fill="url(#tcSweepFill)" transform="skewX(-10)"/></g>'
+)
+
+
 def snake_overlay(snake_svg: str) -> str:
     style = re.search(r"<style>(.*?)</style>", snake_svg, re.S).group(1)
     style = style.replace("--cs:purple", f"--cs:{SNAKE_COLOR}")
@@ -69,7 +141,10 @@ def main() -> None:
     iso, iso_w, iso_h = load(iso_path)
     snk, _, _ = load(snake_path)
 
-    iso = iso.replace("</svg>", snake_overlay(snk) + "</svg>", 1)
+    iso = animate_towers(iso)
+    bg_tag = re.search(r'<rect x="0" y="0" width="\d+" height="\d+" fill="#00000f">\s*</rect>|<rect x="0" y="0" width="\d+" height="\d+" fill="#00000f"/>', iso).group(0)
+    iso = iso.replace(bg_tag, bg_tag + ambient_overlay(), 1)
+    iso = iso.replace("</svg>", IN_ISO_STYLE + SWEEP + snake_overlay(snk) + "</svg>", 1)
 
     W = 900
     content_x, content_w = 25, 850
