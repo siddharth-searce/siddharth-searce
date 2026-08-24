@@ -8,7 +8,7 @@
 
 </div>
 
-<details>
+<details open>
 <summary><b>⟢ &nbsp;<code>$ cat mission.brief</code> &nbsp;— who am i</b></summary>
 <br />
 
@@ -60,14 +60,7 @@
 
 <img src="https://raw.githubusercontent.com/siddharth-searce/siddharth-searce/main/assets/divider.svg" width="850" alt="" />
 
-<img src="https://raw.githubusercontent.com/siddharth-searce/siddharth-searce/main/assets/telemetry-unit.svg" width="850" alt="telemetry console — animated 3D contribution skyline" />
-
-<img src="https://github-readme-stats-sigma-five.vercel.app/api?username=siddharth-searce&show_icons=true&hide_border=true&bg_color=050A0F&title_color=00F0FF&text_color=C9D1D9&icon_color=00FF41&include_all_commits=true&count_private=true" alt="GitHub stats" />
-<img src="https://streak-stats.demolab.com?user=siddharth-searce&hide_border=true&background=050A0F&ring=00F0FF&fire=00FF41&currStreakLabel=00FF41&currStreakNum=C9D1D9&sideNums=C9D1D9&sideLabels=00F0FF&dates=555555&stroke=050A0F" alt="contribution streak" />
-
-<img src="https://ghchart.rshah.org/00ff41/siddharth-searce" alt="contribution graph" width="90%" />
-
-> `[WARN]` most of my commits live in private org repos — the feed undersells the uptime.
+<img src="https://raw.githubusercontent.com/siddharth-searce/siddharth-searce/main/assets/telemetry-unit.svg" width="850" alt="telemetry console — animated 3D contribution skyline with live stats" />
 
 <img src="https://raw.githubusercontent.com/siddharth-searce/siddharth-searce/main/assets/divider.svg" width="850" alt="" />
 

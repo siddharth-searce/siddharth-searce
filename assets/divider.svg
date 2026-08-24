@@ -10,6 +10,7 @@
       .flow{stroke-dasharray:4 12;animation:dash 3.5s linear infinite;}
       @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
       .pulse{animation:pulse 2s ease-in-out infinite;}
+    @media (prefers-reduced-motion:reduce){*{animation:none !important;}}
     </style>
   </defs>
   <line x1="20" y1="13" x2="830" y2="13" stroke="url(#dg)" stroke-width="1.2"/>

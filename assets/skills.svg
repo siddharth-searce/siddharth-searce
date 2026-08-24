@@ -27,6 +27,7 @@
       .f1{animation-delay:1.5s}.f2{animation-delay:1.65s}.f3{animation-delay:1.8s}
       .f4{animation-delay:1.95s}.f5{animation-delay:2.1s}.f6{animation-delay:2.25s}
       .f7{animation-delay:2.4s}.f8{animation-delay:2.55s}
+    @media (prefers-reduced-motion:reduce){*{animation:none !important;}.grow{transform:scaleX(1);}.fadein{opacity:1;}}
     </style>
   </defs>
 

@@ -3,14 +3,16 @@
 component (assets/telemetry-unit.svg) with sky-drop towers, glow pulse,
 light sweep and digital rain.
 
-Usage: compose_telemetry.py <3d.svg> <out.svg>
+Usage: compose_telemetry.py <3d.svg> <out.svg> [stats.json]
 
 The generator's built-in SMIL rise animation is stripped and replaced
 with staggered CSS animations keyed off the isometric grid basis.
 """
 
+import json
 import re
 import sys
+from datetime import date, timedelta
 
 # 3D floor geometry (from github-profile-3d-contrib output, 1280x850 canvas)
 ORIGIN = (140.0, 154.18)     # tile (col=0,row=0) north corner
@@ -100,7 +102,70 @@ IN_ISO_STYLE = """<style>
 @keyframes tcFall{0%{transform:translateY(0);opacity:0}12%{opacity:.3}80%{opacity:.2}100%{transform:translateY(430px);opacity:0}}
 .tcSweepG{animation:tcSweep 9s 2.5s linear infinite;}
 @keyframes tcSweep{from{transform:translateX(0)}to{transform:translateX(1900px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;}}
 </style>"""
+
+def heat_color(n: int) -> str:
+    if n == 0:
+        return "#0E1A22"
+    if n <= 2:
+        return "#01441F"
+    if n <= 5:
+        return "#0F8C3A"
+    if n <= 9:
+        return "#00C647"
+    return "#00FF41"
+
+
+def stats_panel(stats_path: str, y: float, w: int):
+    """Render a stats strip (mini heatmap + counters) from a GitHub GraphQL
+    contributionsCollection JSON dump. Returns (svg, height); ("", 0) when
+    no stats file is available so the composition degrades gracefully."""
+    try:
+        data = json.load(open(stats_path))["data"]["user"]
+    except (OSError, KeyError, ValueError):
+        return "", 0
+
+    cal = data["contributionsCollection"]["contributionCalendar"]
+    total = cal["totalContributions"]
+    followers = data["followers"]["totalCount"]
+    days = [d for wk in cal["weeks"] for d in wk["contributionDays"]]
+    days.sort(key=lambda d: d["date"])
+
+    longest = run = 0
+    for d in days:
+        run = run + 1 if d["contributionCount"] > 0 else 0
+        longest = max(longest, run)
+    current = 0
+    idx = len(days) - 1
+    if days and days[idx]["contributionCount"] == 0 and days[idx]["date"] == date.today().isoformat():
+        idx -= 1  # today hasn't been committed on yet; streak not broken
+    while idx >= 0 and days[idx]["contributionCount"] > 0:
+        current += 1
+        idx -= 1
+
+    parts = [f'<line x1="30" y1="{y:g}" x2="{w - 30}" y2="{y:g}" stroke="url(#tcNeon)" stroke-width="0.8" opacity="0.5"/>']
+    hx, hy = 42, y + 14
+    for wi, wk in enumerate(cal["weeks"]):
+        for d in wk["contributionDays"]:
+            di = (date.fromisoformat(d["date"]).weekday() + 1) % 7
+            parts.append(
+                f'<rect x="{hx + wi * 6}" y="{hy + di * 6:g}" width="5" height="5" '
+                f'fill="{heat_color(d["contributionCount"])}"/>'
+            )
+    tx = hx + 53 * 6 + 40
+    rows = [
+        ("CONTRIBUTIONS [1Y]", str(total), "#00FF41"),
+        ("CURRENT STREAK", f"{current}d", "#00F0FF"),
+        ("LONGEST STREAK", f"{longest}d", "#00F0FF"),
+        ("FOLLOWERS", str(followers), "#B44CFF"),
+    ]
+    for i, (label, val, color) in enumerate(rows):
+        ry = hy + 10 + i * 15
+        parts.append(f'<text x="{tx}" y="{ry:g}" class="tcMono" font-size="12" letter-spacing="1" fill="#7A8B99">{label}</text>')
+        parts.append(f'<text x="{tx + 220}" y="{ry:g}" class="tcMono" font-size="12" letter-spacing="1" fill="{color}" font-weight="bold">{val}</text>')
+    return "".join(parts), 72
+
 
 SWEEP = (
     '<linearGradient id="tcSweepFill" x1="0" y1="0" x2="1" y2="0">'
@@ -114,6 +179,7 @@ SWEEP = (
 
 def main() -> None:
     iso_path, out_path = sys.argv[1], sys.argv[2]
+    stats_path = sys.argv[3] if len(sys.argv) > 3 else ""
 
     iso, iso_w, iso_h = load(iso_path)
 
@@ -128,7 +194,9 @@ def main() -> None:
 
     title_h, foot_h = 58, 46
     y_iso = title_h + 6
-    y_foot = y_iso + iso_hs + 8
+    y_stats = y_iso + iso_hs + 8
+    stats_svg, stats_h = stats_panel(stats_path, y_stats, W) if stats_path else ("", 0)
+    y_foot = y_stats + stats_h + 8
     H = y_foot + foot_h + 12
 
     parts = []
@@ -149,6 +217,7 @@ def main() -> None:
 .tcStream{stroke-dasharray:8 10;animation:tcDash 8s linear infinite;}
 @keyframes tcPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .tcPulse{animation:tcPulse 2.3s ease-in-out infinite;}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;}}
 </style>
 </defs>"""
     )
@@ -181,6 +250,9 @@ def main() -> None:
     )
 
     parts.append(place(iso, content_x, y_iso, content_w, iso_hs))
+
+    if stats_svg:
+        parts.append(stats_svg)
 
     parts.append(
         f'<line x1="30" y1="{y_foot:g}" x2="{W - 30}" y2="{y_foot:g}" '

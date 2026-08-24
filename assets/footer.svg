@@ -13,6 +13,7 @@
       .pulse{animation:pulse 2.6s ease-in-out infinite;}
       @keyframes dash{to{stroke-dashoffset:-320;}}
       .flow{stroke-dasharray:4 12;animation:dash 3.5s linear infinite;}
+    @media (prefers-reduced-motion:reduce){*{animation:none !important;}}
     </style>
   </defs>
   <rect width="850" height="100" fill="#050A0F"/>

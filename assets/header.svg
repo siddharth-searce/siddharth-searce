@@ -25,6 +25,7 @@
       .pulse{animation:pulse 2.2s ease-in-out infinite;}
       @keyframes flicker{0%,90%,100%{opacity:1}91%{opacity:.35}92%{opacity:1}96%{opacity:.55}97%{opacity:1}}
       .flick{animation:flicker 6.5s linear infinite;}
+    @media (prefers-reduced-motion:reduce){*{animation:none !important;}}
     </style>
   </defs>
 
