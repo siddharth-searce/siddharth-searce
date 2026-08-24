@@ -1,0 +1,27 @@
+name: compose telemetry unit
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: compose telemetry svg
+        run: python3 scripts/compose_telemetry.py profile-3d-contrib/profile-night-green.svg assets/telemetry-unit.svg
+
+      - name: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/telemetry-unit.svg
+          git commit -m "chore: recompose telemetry unit" || echo "no changes"
+          git push
