@@ -15,8 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: fetch stats
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api graphql -f query='query($login:String!){user(login:$login){followers{totalCount} contributionsCollection{contributionCalendar{totalContributions weeks{contributionDays{date contributionCount}}}}}}' -F login=${{ github.repository_owner }} > /tmp/stats.json
+
       - name: compose telemetry svg
-        run: python3 scripts/compose_telemetry.py profile-3d-contrib/profile-night-green.svg assets/telemetry-unit.svg
+        run: python3 scripts/compose_telemetry.py profile-3d-contrib/profile-night-green.svg assets/telemetry-unit.svg /tmp/stats.json
 
       - name: commit
         run: |
