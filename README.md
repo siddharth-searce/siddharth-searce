@@ -62,6 +62,8 @@
 
 ### `⟢ TELEMETRY // live feed`
 
+<img src="https://raw.githubusercontent.com/siddharth-searce/siddharth-searce/main/profile-3d-contrib/profile-night-green.svg" width="850" alt="3D contribution graph" />
+
 <img src="https://github-readme-stats-sigma-five.vercel.app/api?username=siddharth-searce&show_icons=true&hide_border=true&bg_color=050A0F&title_color=00F0FF&text_color=C9D1D9&icon_color=00FF41&include_all_commits=true&count_private=true" alt="GitHub stats" />
 <img src="https://streak-stats.demolab.com?user=siddharth-searce&hide_border=true&background=050A0F&ring=00F0FF&fire=00FF41&currStreakLabel=00FF41&currStreakNum=C9D1D9&sideNums=C9D1D9&sideLabels=00F0FF&dates=555555&stroke=050A0F" alt="contribution streak" />
 
