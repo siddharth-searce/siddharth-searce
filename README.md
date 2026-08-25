@@ -26,6 +26,7 @@
 - ⚡ Builds web platforms end-to-end: Angular frontends, Django microservices, GCP infra
 - 🧠 Obsessed with agentic workflows — Claude Code, MCP, automation of the boring parts
 - ☄️ Built [contrib-skyfall](https://github.com/siddharth-searce/contrib-skyfall) — the tool that makes this profile's 3D skyline fall from the sky (grab it for yours)
+- 🛸 This whole profile is an installable AI skill: [futurify-github-profile](https://github.com/siddharth-searce/futurify-github-profile) — one `git clone`, then tell Claude Code to futurify yours
 
 </details>
 
